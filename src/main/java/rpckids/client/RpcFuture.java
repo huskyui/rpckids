@@ -29,6 +29,7 @@ public class RpcFuture<T> implements Future<T> {
 
 	public void success(T result) {
 		this.result = result;
+		// messageCollecter 收取到result将其放开
 		latch.countDown();
 	}
 
@@ -39,6 +40,7 @@ public class RpcFuture<T> implements Future<T> {
 
 	@Override
 	public T get() throws InterruptedException, ExecutionException {
+		// rpc future里面使用countdownLatch来让用户获取result时阻塞
 		latch.await();
 		if (error != null) {
 			throw new ExecutionException(error);

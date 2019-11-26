@@ -3,6 +3,10 @@ package rpckids.common;
 import java.util.HashMap;
 import java.util.Map;
 
+
+/**
+ * 实现了一个 map   type : Class ，提供注册，以及根据type获取class
+ * */
 public class MessageRegistry {
 	private Map<String, Class<?>> clazzes = new HashMap<>();
 

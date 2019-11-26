@@ -21,7 +21,7 @@ import rpckids.common.MessageRegistry;
 
 @Sharable
 public class MessageCollector extends ChannelInboundHandlerAdapter {
-
+// 信息收集器
 	private final static Logger LOG = LoggerFactory.getLogger(MessageCollector.class);
 
 	private ThreadPoolExecutor executor;
@@ -30,6 +30,7 @@ public class MessageCollector extends ChannelInboundHandlerAdapter {
 
 	public MessageCollector(MessageHandlers handlers, MessageRegistry registry, int workerThreads) {
 		BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(1000);
+		// 线程工厂类：每个线程设置名称
 		ThreadFactory factory = new ThreadFactory() {
 
 			AtomicInteger seq = new AtomicInteger();
@@ -42,6 +43,7 @@ public class MessageCollector extends ChannelInboundHandlerAdapter {
 			}
 
 		};
+		// 这个线程池 核心是1，线程池最大数量是workThreads，构造器传过来的，最大存活时间30s，任务队列，线程工厂类
 		this.executor = new ThreadPoolExecutor(1, workerThreads, 30, TimeUnit.SECONDS, queue, factory,
 				new CallerRunsPolicy());
 		this.handlers = handlers;
@@ -67,6 +69,7 @@ public class MessageCollector extends ChannelInboundHandlerAdapter {
 		LOG.debug("connection leaves");
 	}
 
+    // 当获取到数据，就在线程池中execute一个任务
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 		if (msg instanceof MessageInput) {
@@ -78,14 +81,24 @@ public class MessageCollector extends ChannelInboundHandlerAdapter {
 
 	private void handleMessage(ChannelHandlerContext ctx, MessageInput input) {
 		// 业务逻辑在这里
+		//message registry 是一个hashMap中，key:value  类的名称 字符串-> 类 class
 		Class<?> clazz = registry.get(input.getType());
+		//如果没有注册的类，会提示无法识别
 		if (clazz == null) {
 			handlers.defaultHandler().handle(ctx, input.getRequestId(), input);
 			return;
 		}
+		//此处调用fastjson中的，通过json和class来还原数据,
+		/**
+		 * 		public static final <T> T parseObject(String text, Class<T> clazz) {
+		 *         return parseObject(text, clazz);
+		 *     }
+		 * */
+		// 此处的o是请求参数
 		Object o = input.getPayload(clazz);
 		@SuppressWarnings("unchecked")
 		IMessageHandler<Object> handler = (IMessageHandler<Object>) handlers.get(input.getType());
+		// 处理时，会有一个requestId,返回时会加上
 		if (handler != null) {
 			handler.handle(ctx, input.getRequestId(), o);
 		} else {

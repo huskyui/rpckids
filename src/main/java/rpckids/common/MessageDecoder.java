@@ -17,6 +17,12 @@ public class MessageDecoder extends ReplayingDecoder<MessageInput> {
 		out.add(new MessageInput(type, requestId, content));
 	}
 
+
+	/**
+	 * 将ByteBuf转换成string
+	 * @param in
+	 * @return
+	 */
 	private String readStr(ByteBuf in) {
 		int len = in.readInt();
 		if (len < 0 || len > (1 << 20)) {

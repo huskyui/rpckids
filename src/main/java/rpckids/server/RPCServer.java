@@ -53,6 +53,7 @@ public class RPCServer {
 	}
 
 	public void start() {
+		// 开启一个netty server
 		bootstrap = new ServerBootstrap();
 		group = new NioEventLoopGroup(ioThreads);
 		bootstrap.group(group);
