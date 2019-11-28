@@ -25,6 +25,7 @@ public class RPCServer {
 
 	private String ip;
 	private int port;
+	// 线程池相关数据
 	private int ioThreads;
 	private int workerThreads;
 	private MessageHandlers handlers = new MessageHandlers();

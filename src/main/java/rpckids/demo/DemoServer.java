@@ -45,12 +45,25 @@ class ExpRequestHandler implements IMessageHandler<ExpRequest> {
 
 }
 
+class UserBuildHandler implements IMessageHandler<UserBuildReq>{
+	@Override
+	public void handle(ChannelHandlerContext ctx, String requestId, UserBuildReq message) {
+		String name = message.getName();
+		Integer age = message.getAge();
+		age += 2;
+		ctx.writeAndFlush(new MessageOutput(requestId,"user_res",new UserResponse(name,age)));
+	}
+}
+
 public class DemoServer {
 
 	public static void main(String[] args) {
+		// 绑定ip port，以及ioThreads 是netty里面的NioEventLoopGroup()数量，workerThreads 是 线程池里面的配置参数
 		RPCServer server = new RPCServer("localhost", 8888, 2, 16);
+		// 注册type 和对应的requestClass 以及对应处理器
 		server.service("fib", Integer.class, new FibRequestHandler()).service("exp", ExpRequest.class,
-				new ExpRequestHandler());
+				new ExpRequestHandler()).service("user",UserBuildReq.class,new UserBuildHandler());
+		// 启动netty server
 		server.start();
 	}
 

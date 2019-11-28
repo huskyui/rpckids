@@ -21,6 +21,7 @@ public class MessageCollector extends ChannelInboundHandlerAdapter {
 
 	private MessageRegistry registry;
 	private RPCClient client;
+	// netty中的ctx，可以
 	private ChannelHandlerContext context;
 	private ConcurrentMap<String, RpcFuture<?>> pendingTasks = new ConcurrentHashMap<>();
 
@@ -39,9 +40,11 @@ public class MessageCollector extends ChannelInboundHandlerAdapter {
 	@Override
 	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
 		this.context = null;
+		// 刚开始看确实惊到我了，这里也就是key,value别名，foreach lambda
 		pendingTasks.forEach((__, future) -> {
 			future.fail(ConnectionClosed);
 		});
+		// 清空map
 		pendingTasks.clear();
 		// 尝试重连
 		ctx.channel().eventLoop().schedule(() -> {
@@ -54,10 +57,13 @@ public class MessageCollector extends ChannelInboundHandlerAdapter {
 		RpcFuture<T> future = new RpcFuture<T>();
 		if (ctx != null) {
 			ctx.channel().eventLoop().execute(() -> {
+				// 发送请求时，将requestId和结果绑定一下
 				pendingTasks.put(output.getRequestId(), future);
+				// 将数据发送服务端
 				ctx.writeAndFlush(output);
 			});
 		} else {
+		    // 将error设置到rpcFuture，并打开锁
 			future.fail(ConnectionClosed);
 		}
 		return future;
@@ -69,19 +75,22 @@ public class MessageCollector extends ChannelInboundHandlerAdapter {
 			return;
 		}
 		MessageInput input = (MessageInput) msg;
-		// 业务逻辑在这里
+		// 业务逻辑在这里，获取到对应的Class
 		Class<?> clazz = registry.get(input.getType());
 		if (clazz == null) {
 			LOG.error("unrecognized msg type {}", input.getType());
 			return;
 		}
+		// 将json通过fastjson中工具转换为object
 		Object o = input.getPayload(clazz);
+		// 当前的感觉就是requestId对应一个RpcFuture
 		@SuppressWarnings("unchecked")
 		RpcFuture<Object> future = (RpcFuture<Object>) pendingTasks.remove(input.getRequestId());
 		if (future == null) {
 			LOG.error("future not found with type {}", input.getType());
 			return;
 		}
+		// 将结果传递给rpcFuture，并开锁
 		future.success(o);
 	}
 

@@ -32,7 +32,7 @@ public class RpcFuture<T> implements Future<T> {
 		// messageCollecter 收取到result将其放开
 		latch.countDown();
 	}
-
+    // 设置错误，并放开锁
 	public void fail(Throwable error) {
 		this.error = error;
 		latch.countDown();

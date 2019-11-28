@@ -64,6 +64,7 @@ public class RPCClient {
 		}
 	}
 
+	// 此处初始化，创建netty连接
 	public void init() {
 		bootstrap = new Bootstrap();
 		group = new NioEventLoopGroup(1);

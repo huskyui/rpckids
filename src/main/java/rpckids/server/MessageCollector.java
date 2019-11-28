@@ -70,6 +70,7 @@ public class MessageCollector extends ChannelInboundHandlerAdapter {
 	}
 
     // 当获取到数据，就在线程池中execute一个任务
+	// 收到数据就放入线程池
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 		if (msg instanceof MessageInput) {

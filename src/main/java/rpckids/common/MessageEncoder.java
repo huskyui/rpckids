@@ -13,6 +13,14 @@ import io.netty.handler.codec.MessageToMessageEncoder;
 @Sharable
 public class MessageEncoder extends MessageToMessageEncoder<MessageOutput> {
 
+
+	/**
+	 * 编码
+	 * @param ctx
+	 * @param msg
+	 * @param out
+	 * @throws Exception
+	 */
 	@Override
 	protected void encode(ChannelHandlerContext ctx, MessageOutput msg, List<Object> out) throws Exception {
 		ByteBuf buf = PooledByteBufAllocator.DEFAULT.directBuffer();
@@ -23,6 +31,7 @@ public class MessageEncoder extends MessageToMessageEncoder<MessageOutput> {
 	}
 
 	private void writeStr(ByteBuf buf, String s) {
+		// 此处writeInt和writeBytes是什么意思
 		buf.writeInt(s.length());
 		buf.writeBytes(s.getBytes(Charsets.UTF8));
 	}

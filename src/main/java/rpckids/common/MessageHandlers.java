@@ -8,6 +8,7 @@ public class MessageHandlers {
 	private Map<String, IMessageHandler<?>> handlers = new HashMap<>();
 	private IMessageHandler<MessageInput> defaultHandler;
 
+	// 此处需要仔细看一看
 	public void register(String type, IMessageHandler<?> handler) {
 		handlers.put(type, handler);
 	}
